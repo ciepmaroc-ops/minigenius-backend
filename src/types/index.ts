@@ -104,19 +104,3 @@ export interface ApiError {
   error: string;
   details?: string;
 }
-```
-
-Your folder structure now:
-```
-Minigenius_backend/
-  src/
-    config/
-      env.ts            ✅
-      supabase.ts       ✅
-    types/
-      index.ts          ✅ ← just created
-  .env
-  .env.example
-  .gitignore
-  package.json
-  tsconfig.json
