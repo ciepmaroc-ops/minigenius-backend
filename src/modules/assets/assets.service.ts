@@ -1,4 +1,4 @@
-import { env } from '../../config/env';
+import { env } from '../../Config/env';
 import { logger } from '../../utils/logger';
 import { AppError } from '../../middleware/errorHandler';
 
