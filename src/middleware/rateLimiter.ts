@@ -1,5 +1,5 @@
 import rateLimit from 'express-rate-limit';
-import { env } from '../config/env';
+import { env } from '../Config/env'
 
 export const apiLimiter = rateLimit({
   windowMs: Number(env.RATE_LIMIT_WINDOW_MS),
