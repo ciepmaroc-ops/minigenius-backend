@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { supabase } from '../../config/supabase';
+import { supabase } from '../../Config/supabase';
 import { logger } from '../../utils/logger';
 
 export const healthRouter = Router();
