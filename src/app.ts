@@ -1,12 +1,12 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import { env } from './config/env';
+import { env } from './Config/env'
 import { apiLimiter } from './middleware/rateLimiter';
 import { errorHandler } from './middleware/errorHandler';
 import { logger } from './utils/logger';
 import { healthRouter } from './modules/health/health.routes';
-import { authRouter } from './modules/auth/auth.routes';
+import { authRouter } from './modules/Auth/auth.routes'
 import { parentsRouter } from './modules/parents/parents.routes';
 import { childrenRouter } from './modules/children/children.routes';
 import { subscriptionsRouter } from './modules/subscriptions/subscriptions.routes';
