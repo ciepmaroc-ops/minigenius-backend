@@ -41,8 +41,8 @@ router.post('/create-checkout', async (req, res) => {
       line_items: [{ price: priceId, quantity: 1 }],
       mode: 'subscription',
       subscription_data: { trial_period_days: 7 },
-      success_url: 'http://localhost:3000/app?checkout=success',
-      cancel_url:  'http://localhost:3000/pricing.html?checkout=canceled',
+      success_url: 'http://localhost:55074/checkout.html?success=true',
+      cancel_url:  'http://localhost:55074/pricing.html?canceled=true',
     });
 
     res.json({ url: session.url });
