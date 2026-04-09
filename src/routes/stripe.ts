@@ -4,18 +4,22 @@ import { createClient } from '@supabase/supabase-js';
 
 const router = express.Router();
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_ANON_KEY!
-);
-
 // ── POST /stripe/create-checkout ──────────────────────────
-router.post('/create-checkout', async (req, res) => {
+// Parse JSON normalement pour cette route
+router.post('/create-checkout', express.json(), async (req, res) => {
   const { priceId, userId, email } = req.body;
 
+  if (!priceId || !email) {
+    return res.status(400).json({ error: 'priceId et email requis' });
+  }
+
   try {
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+    const supabase = createClient(
+      process.env.SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_KEY!
+    );
+
     let customerId: string;
 
     const { data: user } = await supabase
@@ -48,15 +52,22 @@ router.post('/create-checkout', async (req, res) => {
     res.json({ url: session.url });
 
   } catch (err: any) {
+    console.error('Stripe error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
 
 // ── POST /stripe/webhook ───────────────────────────────────
+// Raw body pour vérifier la signature Stripe
 router.post('/webhook',
   express.raw({ type: 'application/json' }),
   async (req, res) => {
     const sig = req.headers['stripe-signature'] as string;
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+    const supabase = createClient(
+      process.env.SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_KEY!
+    );
 
     let event: Stripe.Event;
     try {
