@@ -5,7 +5,6 @@ import { createClient } from '@supabase/supabase-js';
 const router = express.Router();
 
 // ── POST /stripe/create-checkout ──────────────────────────
-// Parse JSON normalement pour cette route
 router.post('/create-checkout', express.json(), async (req, res) => {
   const { priceId, userId, email } = req.body;
 
@@ -22,21 +21,45 @@ router.post('/create-checkout', express.json(), async (req, res) => {
 
     let customerId: string;
 
-    const { data: user } = await supabase
-      .from('users')
-      .select('stripe_customer_id')
-      .eq('id', userId)
-      .single();
-
-    if (user?.stripe_customer_id) {
-      customerId = user.stripe_customer_id;
-    } else {
-      const customer = await stripe.customers.create({ email });
-      customerId = customer.id;
-      await supabase
+    // 1. Chercher dans Supabase si userId fourni
+    if (userId) {
+      const { data: user } = await supabase
         .from('users')
-        .update({ stripe_customer_id: customerId })
-        .eq('id', userId);
+        .select('stripe_customer_id')
+        .eq('id', userId)
+        .single();
+
+      if (user?.stripe_customer_id) {
+        // Customer déjà connu → réutiliser
+        customerId = user.stripe_customer_id;
+      } else {
+        // 2. Chercher dans Stripe par email pour éviter doublons
+        const existing = await stripe.customers.list({ email, limit: 1 });
+
+        if (existing.data.length > 0) {
+          customerId = existing.data[0].id;
+        } else {
+          // 3. Créer nouveau customer
+          const customer = await stripe.customers.create({ email });
+          customerId = customer.id;
+        }
+
+        // Sauvegarder dans Supabase
+        await supabase
+          .from('users')
+          .update({ stripe_customer_id: customerId })
+          .eq('id', userId);
+      }
+    } else {
+      // Pas de userId → chercher par email dans Stripe
+      const existing = await stripe.customers.list({ email, limit: 1 });
+
+      if (existing.data.length > 0) {
+        customerId = existing.data[0].id;
+      } else {
+        const customer = await stripe.customers.create({ email });
+        customerId = customer.id;
+      }
     }
 
     const session = await stripe.checkout.sessions.create({
